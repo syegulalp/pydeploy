@@ -1,0 +1,13 @@
+[project]
+name = "pydeploy"
+version = "0.1"
+
+[project.optional-dependencies]
+dev = ["black"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "Cython"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+pydeploy = "pydeploy.deploy:main"

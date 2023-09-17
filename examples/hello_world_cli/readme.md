@@ -1,0 +1,1 @@
+This directory contains an example of a `pyproject.toml` project, useful with PyDeploy, that consists of a single module and a CLI interface. When deployed it can be invoked with the command `hello_world.exe`.
