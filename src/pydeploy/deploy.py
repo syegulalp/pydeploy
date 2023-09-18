@@ -89,11 +89,11 @@ def main():
 
     with open(RUNTIME_DIST_PATH / f"python{SHORT_VERSION_ID}._pth", "w") as dist_dir:
         dist_dir.write(
-            f"{PYLIBS_TARGET_DIR}\\python{SHORT_VERSION_ID}.zip\n"
-            "{PYLIBS_TARGET_DIR}\n"
-            f"{APP_LIBS_TARGET_DIR}\\{app_name}_lib.zip"
             f"{APP_LIBS_TARGET_DIR}\n"
-            "."
+            f"{APP_LIBS_TARGET_DIR}/{app_name}_lib.zip\n"
+            f"{PYLIBS_TARGET_DIR}\n"
+            f"{PYLIBS_TARGET_DIR}/python{SHORT_VERSION_ID}.zip\n"
+            ".\n"
         )
 
     PY_LIBS_PATH = RUNTIME_DIST_PATH / PYLIBS_TARGET_DIR
@@ -109,6 +109,49 @@ def main():
 
     pip.main(["install", PACKAGE_NAME, "-t", str(APP_LIBS_PATH)])
 
+    logging.info("Removing legacy bin directory from distribution")
+
+    shutil.rmtree(APP_LIBS_PATH / "bin")
+
+    logging.info("Removing dist-info directories")
+
+    for dist_dir in glob.glob(str(APP_LIBS_PATH / "*.dist-info")):
+        shutil.rmtree(dist_dir, ignore_errors=True)
+
+    logging.info("Compiling .py to .pyc archives")
+
+    # app_libs_archive = zipfile.ZipFile(
+    #     str(APP_LIBS_PATH / f"{app_name}_lib.zip"),
+    #     "w",
+    #     compression=zipfile.ZIP_DEFLATED
+    #     # compresslevel=9,
+    # )
+
+    # TODO: zipfile archives for libraries does not work properly
+    # if .pyd files are present - for some reason they are not
+    # detected in the parallel directory?
+
+    for path, dirs, files in os.walk(str(APP_LIBS_PATH)):
+        for dir in dirs:
+            if dir.endswith("__pycache__"):
+                shutil.rmtree(Path(path, dir), ignore_errors=True)
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+            f_path = Path(path, file)
+            compiled_f_path = f_path.with_suffix(".pyc")
+            py_compile.compile(f_path, f_path.with_suffix(".pyc"))
+            # app_libs_archive.write(
+            #     str(compiled_f_path),
+            #     str(compiled_f_path).replace(str(APP_LIBS_PATH), ""),
+            # )
+            f_path.unlink(missing_ok=True)
+            # compiled_f_path.unlink(missing_ok=True)
+
+    # for path, dirs, files in os.walk(str(APP_LIBS_PATH), topdown=False):
+    #     if not files:
+    #         Path(path).rmdir()
+
     logging.info("Creating entry point .exes")
 
     gui = False
@@ -121,47 +164,9 @@ def main():
                 add_launchers=True,
             )
             sm.variants = [""]
+            sm.executable = "./python.exe"
             sm.make(f"{script_name} = {script_path}", {"gui": gui})
         gui = True
-
-    logging.info("Removing legacy bin directory from distribution")
-
-    shutil.rmtree(APP_LIBS_PATH / "bin")
-
-    logging.info("Removing dist-info directories")
-
-    for dist_dir in glob.glob(str(APP_LIBS_PATH / "*.dist-info")):
-        shutil.rmtree(dist_dir, ignore_errors=True)
-
-    logging.info("Compiling .py to .pyc archives")
-
-    app_libs_archive = zipfile.ZipFile(
-        str(APP_LIBS_PATH / f"{app_name}_lib.zip"),
-        "w",
-        compression=zipfile.ZIP_BZIP2,
-        # compresslevel=9,
-    )
-
-    for path, dirs, files in os.walk(str(APP_LIBS_PATH)):
-        for dir in dirs:
-            if dir.endswith("__pycache__"):
-                shutil.rmtree(Path(path, dir), ignore_errors=True)
-        for file in files:
-            if not file.endswith(".py"):
-                continue
-            f_path = Path(path, file)
-            compiled_f_path = f_path.with_suffix(".pyc")
-            py_compile.compile(f_path, f_path.with_suffix(".pyc"))
-            app_libs_archive.write(
-                str(compiled_f_path),
-                str(compiled_f_path).replace(str(APP_LIBS_PATH), ""),
-            )
-            f_path.unlink(missing_ok=True)
-            compiled_f_path.unlink(missing_ok=True)
-
-    for path, dirs, files in os.walk(str(APP_LIBS_PATH), topdown=False):
-        if not files:
-            Path(path).rmdir()
 
     logging.info("Creating .zip archive")
 
