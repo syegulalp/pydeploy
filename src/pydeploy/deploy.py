@@ -28,6 +28,9 @@ RUNTIME_DIST_PATH = Path(DISTRIBUTION_PATH, "./dist")
 VENV_PATH = Path(sys.prefix)
 SYSTEM_INTERPRETER_PATH = Path(sys.base_prefix)
 
+PYLIBS_TARGET_DIR = "pylibs"
+APP_LIBS_TARGET_DIR = "app"
+
 
 def fetch_runtime(source: str, target: Path):
     with urlopen(source) as u:
@@ -86,17 +89,17 @@ def main():
 
     with open(RUNTIME_DIST_PATH / f"python{SHORT_VERSION_ID}._pth", "w") as dist_dir:
         dist_dir.write(
-            f".pylibs\\python{SHORT_VERSION_ID}.zip\n"
-            ".pylibs\n"
-            f".libs\\{app_name}_lib.zip"
-            ".libs\n"
+            f"{PYLIBS_TARGET_DIR}\\python{SHORT_VERSION_ID}.zip\n"
+            "{PYLIBS_TARGET_DIR}\n"
+            f"{APP_LIBS_TARGET_DIR}\\{app_name}_lib.zip"
+            f"{APP_LIBS_TARGET_DIR}\n"
             "."
         )
 
-    PY_LIBS_PATH = RUNTIME_DIST_PATH / ".pylibs"
+    PY_LIBS_PATH = RUNTIME_DIST_PATH / PYLIBS_TARGET_DIR
     PY_LIBS_PATH.mkdir()
 
-    APP_LIBS_PATH = RUNTIME_DIST_PATH / ".libs"
+    APP_LIBS_PATH = RUNTIME_DIST_PATH / APP_LIBS_TARGET_DIR
 
     for dist_dir in ("python*.zip", "*.pyd", "*.dll"):
         files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
@@ -157,7 +160,7 @@ def main():
             compiled_f_path.unlink(missing_ok=True)
 
     for path, dirs, files in os.walk(str(APP_LIBS_PATH), topdown=False):
-        if not files and not dirs:
+        if not files:
             Path(path).rmdir()
 
     logging.info("Creating .zip archive")
