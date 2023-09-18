@@ -54,8 +54,9 @@ The resulting archive may be fairly large even for a simple "hello world" app, b
 
 # Todo
 
-* Support for including TKinter
-* Support for excluding specific modules or submodules
+* Support for including TKinter (not included with embedded redistributable)
+* Support for excluding specific modules or submodules from apps or stdlib
+* Quick-and-dirty "minimal" mode (no SQLite, no libcrypto or other network modules, which reduces footprint by 7MB or so)
 
 # License
 

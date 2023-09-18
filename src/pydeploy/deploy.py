@@ -78,7 +78,7 @@ def main():
 
     PACKAGE_NAME = sys.argv[1] if len(sys.argv) > 1 else "."
 
-    for dist_dir in ("python*.exe", "python*.dll", "vc*.dll"):
+    for dist_dir in ("python*.exe", "python*.dll"):
         files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
         for ff in files:
             file = Path(ff)
@@ -98,7 +98,7 @@ def main():
 
     APP_LIBS_PATH = RUNTIME_DIST_PATH / ".libs"
 
-    for dist_dir in ("python*.zip", "*.pyd", "lib*.dll"):
+    for dist_dir in ("python*.zip", "*.pyd", "*.dll"):
         files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
         for ff in files:
             file = Path(ff)
