@@ -130,12 +130,7 @@ def main():
             if dir.endswith("__pycache__"):
                 shutil.rmtree(Path(path, dir), ignore_errors=True)
 
-        skipdir = False
-
-        for file in files:
-            if not file.endswith(".py"):
-                skipdir = True
-                break
+        skipdir = any(f.endswith("py") for f in files)
 
         for file in files:
             if file.endswith(".py"):
