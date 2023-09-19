@@ -28,8 +28,11 @@ RUNTIME_DIST_PATH = Path(DISTRIBUTION_PATH, "./dist")
 VENV_PATH = Path(sys.prefix)
 SYSTEM_INTERPRETER_PATH = Path(sys.base_prefix)
 
-PYLIBS_TARGET_DIR = "pylibs"
-APP_LIBS_TARGET_DIR = "app"
+PYLIBS_TARGET_DIR_NAME = "libs"
+APP_LIBS_TARGET_DIR_NAME = "app"
+
+PYLIBS_TARGET_DIR = RUNTIME_DIST_PATH / PYLIBS_TARGET_DIR_NAME
+APP_LIBS_TARGET_DIR = PYLIBS_TARGET_DIR / APP_LIBS_TARGET_DIR_NAME
 
 
 def fetch_runtime(source: str, target: Path):
@@ -81,76 +84,77 @@ def main():
 
     PACKAGE_NAME = sys.argv[1] if len(sys.argv) > 1 else "."
 
+    PYLIBS_TARGET_DIR.mkdir()
+
     for dist_dir in ("python*.exe", "python*.dll"):
         files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
         for ff in files:
             file = Path(ff)
-            shutil.copyfile(file, RUNTIME_DIST_PATH / file.name)
+            shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    with open(RUNTIME_DIST_PATH / f"python{SHORT_VERSION_ID}._pth", "w") as dist_dir:
+    with open(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}._pth", "w") as dist_dir:
         dist_dir.write(
-            f"{APP_LIBS_TARGET_DIR}\n"
-            f"{APP_LIBS_TARGET_DIR}/{app_name}_lib.zip\n"
-            f"{PYLIBS_TARGET_DIR}\n"
-            f"{PYLIBS_TARGET_DIR}/python{SHORT_VERSION_ID}.zip\n"
+            f"{APP_LIBS_TARGET_DIR_NAME}\n"
+            f"{APP_LIBS_TARGET_DIR_NAME}/{app_name}_lib.zip\n"
+            f"python{SHORT_VERSION_ID}.zip\n"
             ".\n"
         )
-
-    PY_LIBS_PATH = RUNTIME_DIST_PATH / PYLIBS_TARGET_DIR
-    PY_LIBS_PATH.mkdir()
-
-    APP_LIBS_PATH = RUNTIME_DIST_PATH / APP_LIBS_TARGET_DIR
 
     for dist_dir in ("python*.zip", "*.pyd", "*.dll"):
         files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
         for ff in files:
             file = Path(ff)
-            shutil.copyfile(file, PY_LIBS_PATH / file.name)
+            shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    pip.main(["install", PACKAGE_NAME, "-t", str(APP_LIBS_PATH)])
+    pip.main(["install", PACKAGE_NAME, "-t", str(APP_LIBS_TARGET_DIR)])
 
     logging.info("Removing legacy bin directory from distribution")
 
-    shutil.rmtree(APP_LIBS_PATH / "bin")
+    shutil.rmtree(APP_LIBS_TARGET_DIR / "bin")
 
     logging.info("Removing dist-info directories")
 
-    for dist_dir in glob.glob(str(APP_LIBS_PATH / "*.dist-info")):
+    for dist_dir in glob.glob(str(APP_LIBS_TARGET_DIR / "*.dist-info")):
         shutil.rmtree(dist_dir, ignore_errors=True)
 
     logging.info("Compiling .py to .pyc archives")
 
-    # app_libs_archive = zipfile.ZipFile(
-    #     str(APP_LIBS_PATH / f"{app_name}_lib.zip"),
-    #     "w",
-    #     compression=zipfile.ZIP_DEFLATED
-    #     # compresslevel=9,
-    # )
+    app_libs_archive = zipfile.ZipFile(
+        str(APP_LIBS_TARGET_DIR / f"{app_name}_lib.zip"),
+        "w",
+        compression=zipfile.ZIP_DEFLATED,
+    )
 
-    # TODO: zipfile archives for libraries does not work properly
-    # if .pyd files are present - for some reason they are not
-    # detected in the parallel directory?
-
-    for path, dirs, files in os.walk(str(APP_LIBS_PATH)):
+    for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR)):
         for dir in dirs:
             if dir.endswith("__pycache__"):
                 shutil.rmtree(Path(path, dir), ignore_errors=True)
+
+        skipdir = False
+
         for file in files:
             if not file.endswith(".py"):
-                continue
-            f_path = Path(path, file)
-            compiled_f_path = f_path.with_suffix(".pyc")
-            py_compile.compile(f_path, f_path.with_suffix(".pyc"))
-            # app_libs_archive.write(
-            #     str(compiled_f_path),
-            #     str(compiled_f_path).replace(str(APP_LIBS_PATH), ""),
-            # )
-            f_path.unlink(missing_ok=True)
-            # compiled_f_path.unlink(missing_ok=True)
+                skipdir = True
+                break
 
-    # for path, dirs, files in os.walk(str(APP_LIBS_PATH), topdown=False):
-    #     if not files:
-    #         Path(path).rmdir()
+        for file in files:
+            if file.endswith(".py"):
+                f_path = Path(path, file)
+                compiled_f_path = f_path.with_suffix(".pyc")
+                py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=-1)
+                if not skipdir:
+                    app_libs_archive.write(
+                        str(compiled_f_path),
+                        str(compiled_f_path).replace(str(APP_LIBS_TARGET_DIR), ""),
+                    )
+                    compiled_f_path.unlink(missing_ok=True)
+                f_path.unlink(missing_ok=True)
+
+    for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR), topdown=False):
+        if not files:
+            Path(path).rmdir()
+
+    app_libs_archive.close()
 
     logging.info("Creating entry point .exes")
 
@@ -164,7 +168,7 @@ def main():
                 add_launchers=True,
             )
             sm.variants = [""]
-            sm.executable = "./python.exe"
+            sm.executable = f"./{PYLIBS_TARGET_DIR_NAME}/python.exe"
             sm.make(f"{script_name} = {script_path}", {"gui": gui})
         gui = True
 
@@ -177,7 +181,6 @@ def main():
         str(zip_archive_filename),
         "w",
         compression=zipfile.ZIP_BZIP2,
-        # compresslevel=9,
     )
     for path, dirs, files in os.walk(str(RUNTIME_DIST_PATH)):
         target_path = path.replace(str(RUNTIME_DIST_PATH), ".")
