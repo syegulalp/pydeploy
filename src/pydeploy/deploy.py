@@ -130,7 +130,7 @@ def main():
             if dir.endswith("__pycache__"):
                 shutil.rmtree(Path(path, dir), ignore_errors=True)
 
-        skipdir = any(f.endswith("py") for f in files)
+        skipdir = any(not f.endswith(".py") for f in files)
 
         for file in files:
             if file.endswith(".py"):
@@ -147,7 +147,10 @@ def main():
 
     for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR), topdown=False):
         if not files:
-            Path(path).rmdir()
+            try:
+                Path(path).rmdir()
+            except OSError:
+                continue
 
     app_libs_archive.close()
 
