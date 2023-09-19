@@ -145,14 +145,14 @@ def main():
                     compiled_f_path.unlink(missing_ok=True)
                 f_path.unlink(missing_ok=True)
 
+    app_libs_archive.close()
+
     for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR), topdown=False):
         if not files:
             try:
                 Path(path).rmdir()
             except OSError:
                 continue
-
-    app_libs_archive.close()
 
     logging.info("Creating entry point .exes")
 
