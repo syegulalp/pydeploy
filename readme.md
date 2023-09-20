@@ -48,6 +48,11 @@ After the analysis and build process finishes you should have a `dist` subdirect
 
 The resulting archive may be fairly large even for a simple "hello world" app, but I will introduce mechanisms in the future to make the deployed app less bulky by removing unused libraries.
 
+Pydeploy has a few command line switches, supplied after the directory name for the project to build (typically `.`):
+
+* `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if PyDeploy detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
+* `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
+
 # Tips
 
 [TODO] The `examples` directory will contain scaffolding examples for many common project types -- a simple CLI, a windowed app using TKinter or Pygame, etc.
