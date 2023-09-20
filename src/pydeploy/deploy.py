@@ -34,6 +34,31 @@ APP_LIBS_TARGET_DIR_NAME = "app"
 PYLIBS_TARGET_DIR = RUNTIME_DIST_PATH / PYLIBS_TARGET_DIR_NAME
 APP_LIBS_TARGET_DIR = PYLIBS_TARGET_DIR / APP_LIBS_TARGET_DIR_NAME
 
+remove_for_smallify = (
+    "libssl*.*",
+    "sqlite*.*",
+    "libcrypto*.*",
+    "_ssl.pyd",
+    "_sqlite3.pyd",
+    "_socket.pyd",
+    "_decimal.pyd",
+)
+
+remove_stdlib_for_smallify = {
+    "xml",
+    "unittest",
+    "distutils",
+    "pydoc_data",
+    "asyncio",
+    "multiprocessing",
+    "lib2to3",
+    "msilib",
+    "email",
+    "pydoc.pyc",
+    "mailbox.pyc",
+    "_pydecimal.pyc",
+}
+
 
 def fetch_runtime(source: str, target: Path):
     with urlopen(source) as u:
@@ -71,13 +96,26 @@ def setup_directories():
 
 
 def main():
+    SMALLIFY = False
+    ZIP_LIBS_ARCHIVE = True
+
+    for i in sys.argv:
+        if i == "-s":
+            SMALLIFY = True
+        elif i == "-x":
+            ZIP_LIBS_ARCHIVE = False
+
     app_toml = tomllib.load(open("pyproject.toml", "rb"))
     app_name = app_toml["project"]["name"]
 
     cli_scripts = app_toml["project"].get("scripts", {})
     gui_scripts = app_toml["project"].get("gui-scripts", {})
 
-    logging.info("Pypacker running")
+    logging.info("Pydeploy running")
+
+    if SMALLIFY:
+        logging.info("Creating smaller footprint redistributable")
+
     setup_directories()
 
     logging.info("Copying base files from redistributable")
@@ -117,35 +155,49 @@ def main():
     for dist_dir in glob.glob(str(APP_LIBS_TARGET_DIR / "*.dist-info")):
         shutil.rmtree(dist_dir, ignore_errors=True)
 
-    logging.info("Compiling .py to .pyc archives")
-
-    app_libs_archive = zipfile.ZipFile(
-        str(APP_LIBS_TARGET_DIR / f"{app_name}_lib.zip"),
-        "w",
-        compression=zipfile.ZIP_DEFLATED,
-    )
-
     for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR)):
         for dir in dirs:
             if dir.endswith("__pycache__"):
                 shutil.rmtree(Path(path, dir), ignore_errors=True)
 
-        skipdir = any(not f.endswith(".py") for f in files)
+    logging.info("Compiling .py to .pyc archives")
 
-        for file in files:
-            if file.endswith(".py"):
-                f_path = Path(path, file)
-                compiled_f_path = f_path.with_suffix(".pyc")
-                py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=-1)
-                if not skipdir:
-                    app_libs_archive.write(
-                        str(compiled_f_path),
-                        str(compiled_f_path).replace(str(APP_LIBS_TARGET_DIR), ""),
-                    )
-                    compiled_f_path.unlink(missing_ok=True)
-                f_path.unlink(missing_ok=True)
+    if ZIP_LIBS_ARCHIVE:
+        app_libs_archive = zipfile.ZipFile(
+            str(APP_LIBS_TARGET_DIR / f"{app_name}_lib.zip"),
+            "w",
+            compression=zipfile.ZIP_DEFLATED,
+        )
 
-    app_libs_archive.close()
+    # TODO: don't use walk for this first level
+    app_lib_tree = list(os.walk(str(APP_LIBS_TARGET_DIR)))
+    root_dirs = app_lib_tree[0][1]
+
+    for root_dir in root_dirs:
+        filetree = list(os.walk(str(APP_LIBS_TARGET_DIR / root_dir)))
+        all_py = True
+        for path, dirs, files in filetree:
+            all_py = all(f.endswith(".py") for f in files) and all_py
+
+        for path, dirs, files in filetree:
+            for file in files:
+                if file.endswith(".py"):
+                    f_path = Path(path, file)
+                    compiled_f_path = f_path.with_suffix(".pyc")
+                    py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=-1)
+                    if ZIP_LIBS_ARCHIVE:
+                        if all_py:
+                            app_libs_archive.write(
+                                str(compiled_f_path),
+                                str(compiled_f_path).replace(
+                                    str(APP_LIBS_TARGET_DIR), ""
+                                ),
+                            )
+                            compiled_f_path.unlink(missing_ok=True)
+                    f_path.unlink(missing_ok=True)
+
+    if ZIP_LIBS_ARCHIVE:
+        app_libs_archive.close()
 
     for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR), topdown=False):
         if not files:
@@ -169,6 +221,39 @@ def main():
             sm.executable = f"./{PYLIBS_TARGET_DIR_NAME}/python.exe"
             sm.make(f"{script_name} = {script_path}", {"gui": gui})
         gui = True
+
+    if SMALLIFY:
+        logging.info("Smallifying distribution")
+
+        for i in remove_for_smallify:
+            for file in glob.glob(str(PYLIBS_TARGET_DIR / i)):
+                Path(file).unlink()
+
+        stdlib_archive = zipfile.ZipFile(
+            str(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"), "r"
+        )
+        stdlib_new_archive = zipfile.ZipFile(
+            str(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip.new"),
+            "w",
+            compression=zipfile.ZIP_DEFLATED,
+        )
+
+        for i in stdlib_archive.infolist():
+            if "/" in i.filename:
+                fname = i.filename.split("/", 1)[0]
+            else:
+                fname = i.filename
+            if not fname in remove_stdlib_for_smallify:
+                buf = stdlib_archive.read(i.filename)
+                stdlib_new_archive.writestr(i, buf)
+
+        stdlib_archive.close()
+        stdlib_new_archive.close()
+
+        (PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip").unlink()
+        (PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip.new").rename(
+            PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"
+        )
 
     logging.info("Creating .zip archive")
 
