@@ -225,15 +225,16 @@ def main():
     if SMALLIFY:
         logging.info("Smallifying distribution")
 
+        original_zip = PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"
+        new_zip = original_zip.with_suffix(".zip.new")
+
         for i in remove_for_smallify:
             for file in glob.glob(str(PYLIBS_TARGET_DIR / i)):
                 Path(file).unlink()
 
-        stdlib_archive = zipfile.ZipFile(
-            str(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"), "r"
-        )
+        stdlib_archive = zipfile.ZipFile(str(original_zip), "r")
         stdlib_new_archive = zipfile.ZipFile(
-            str(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip.new"),
+            str(new_zip),
             "w",
             compression=zipfile.ZIP_DEFLATED,
         )
@@ -250,10 +251,8 @@ def main():
         stdlib_archive.close()
         stdlib_new_archive.close()
 
-        (PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip").unlink()
-        (PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip.new").rename(
-            PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"
-        )
+        original_zip.unlink()
+        new_zip.rename(original_zip)
 
     logging.info("Creating .zip archive")
 
