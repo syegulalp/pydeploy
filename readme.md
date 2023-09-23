@@ -32,6 +32,8 @@ myproject = "myproject:main"
 Note that the `project.scripts` section will be used by PyDeploy to determine what `.exe` entry points to make. In this case, we will have a CLI entry point named `myproject.exe` in our deployable app directory.
 
 *Make sure your application works as a `pip install`-able project **before** you use PyDeploy!* Install your app into its own venv using the `-e` ("editable") flag, and test it that way.
+
+
 ## 2. Install PyDeploy into project venv
 
 Right now PyDeploy is not on PyPI, so you'll need to install directly from Github.
@@ -55,13 +57,12 @@ Pydeploy has a few command line switches, supplied after the directory name for 
 
 # Tips
 
-[TODO] The `examples` directory will contain scaffolding examples for many common project types -- a simple CLI, a windowed app using TKinter or Pygame, etc.
+The `examples` directory contains scaffolding examples for a few common project types -- a simple CLI, a windowed app using TKinter or Pygame, etc. This gallery will be expanded with time.
 
 # Todo
 
 * Support for including TKinter (not included with embedded redistributable)
 * Support for excluding specific modules or submodules from apps or stdlib
-* Quick-and-dirty "minimal" mode (no SQLite, no libcrypto or other network modules, which reduces footprint by 7MB or so)
 
 # License
 
