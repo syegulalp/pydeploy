@@ -106,10 +106,11 @@ def main():
             ZIP_LIBS_ARCHIVE = False
 
     app_toml = tomllib.load(open("pyproject.toml", "rb"))
-    app_name = app_toml["project"]["name"]
+    toml_project = app_toml["project"]
 
-    cli_scripts = app_toml["project"].get("scripts", {})
-    gui_scripts = app_toml["project"].get("gui-scripts", {})
+    app_name = toml_project["name"]
+    cli_scripts = toml_project.get("scripts", {})
+    gui_scripts = toml_project.get("gui-scripts", {})
 
     logging.info("Pydeploy running")
 
