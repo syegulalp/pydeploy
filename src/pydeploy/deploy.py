@@ -256,7 +256,7 @@ def main():
 
     logging.info("Creating .zip archive")
 
-    zip_archive_filename = Path(DISTRIBUTION_PATH / f"{app_name}.zip")
+    zip_archive_filename = DISTRIBUTION_PATH / f"{app_name}.zip"
     zip_archive_filename.unlink(missing_ok=True)
 
     app_archive = zipfile.ZipFile(
