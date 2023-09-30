@@ -33,6 +33,16 @@ Note that the `project.scripts` section will be used by PyDeploy to determine wh
 
 *Make sure your application works as a `pip install`-able project **before** you use PyDeploy!* Install your app into its own venv using the `-e` ("editable") flag, and test it that way.
 
+### Handling data directories
+
+If you want to copy data directories or other artifacts over to the target, add the following section to `pyproject.toml`:
+
+```toml
+[tool.pydeploy]
+data_dirs = [["source_dir", "target_dir"]]
+```
+
+`data_dirs` is a list of two-item lists. The first item is the source directory in your project tree (with `pyproject.toml` as the root); the second item is the target directory with the executable directory as the root. (This is the directory that will by default be the current working directory when your app is launched.)
 
 ## 2. Install PyDeploy into project venv
 

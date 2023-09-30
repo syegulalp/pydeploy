@@ -112,6 +112,9 @@ def main():
     cli_scripts = toml_project.get("scripts", {})
     gui_scripts = toml_project.get("gui-scripts", {})
 
+    pydeploy_data = app_toml.get("tool", {}).get("pydeploy")
+    data_dirs = pydeploy_data.get("data_dirs", []) if pydeploy_data else None
+
     logging.info("Pydeploy running")
 
     if SMALLIFY:
@@ -145,7 +148,16 @@ def main():
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    pip.main(["install", PACKAGE_NAME, "-t", str(APP_LIBS_TARGET_DIR)])
+    pip.main(
+        [
+            "install",
+            PACKAGE_NAME,
+            # "--no-cache-dir",
+            # "--force-reinstall",
+            "-t",
+            str(APP_LIBS_TARGET_DIR),
+        ]
+    )
 
     logging.info("Removing legacy bin directory from distribution")
 
@@ -254,6 +266,11 @@ def main():
 
         original_zip.unlink()
         new_zip.rename(original_zip)
+
+    if data_dirs:
+        logging.info("Copying data directories")
+        for src, target in data_dirs:
+            shutil.copytree(src, RUNTIME_DIST_PATH / target)
 
     logging.info("Creating .zip archive")
 
