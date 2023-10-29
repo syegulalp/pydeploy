@@ -1,0 +1,14 @@
+[project]
+name = "desktop_web"
+version = "0.1"
+dependencies = ["bottle"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.gui-scripts]
+desktop_web = "desktop_web:main"
+
+[project.scripts]
+desktop_web_c = "desktop_web:main"
