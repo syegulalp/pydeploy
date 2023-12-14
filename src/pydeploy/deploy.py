@@ -42,10 +42,15 @@ remove_for_smallify = (
     "_sqlite3.pyd",
     "_socket.pyd",
     "_decimal.pyd",
+    "_elementtree*.*",
+    "_zoneinfo*.*"
 )
 
 remove_stdlib_for_smallify = {
+    # folders
+    "html",
     "xml",
+    "xmlrpc",
     "unittest",
     "distutils",
     "pydoc_data",
@@ -54,9 +59,31 @@ remove_stdlib_for_smallify = {
     "lib2to3",
     "msilib",
     "email",
+    "http",
+    "logging",
+    "zoneinfo",
+    # files
+    "pdb.pyc",
+    "tarfile.pyc",
+    "doctest.pyc",
+    "pickletools.pyc",
     "pydoc.pyc",
     "mailbox.pyc",
     "_pydecimal.pyc",
+    "ssl.pyc",
+    "imaplib.pyc",
+    "smtpd.pyc",
+    "smtplib.pyc",
+    "ftplib.pyc",
+    "cgi.pyc",
+    "calendar.pyc",
+    "nttplib.pyc",
+    "plistlib.pyc",
+    
+}
+
+encodings_to_keep_for_smallify = {
+    "aliases","cp437","cp1252","utf_8","utf_16_le","__init__"
 }
 
 
@@ -253,10 +280,18 @@ def main():
         )
 
         for i in stdlib_archive.infolist():
+            if i.filename.startswith("encodings/"):
+                fname = i.filename.split("/", 1)[1].split(".",1)[0]
+                if fname in encodings_to_keep_for_smallify:
+                    buf = stdlib_archive.read(i.filename)
+                    stdlib_new_archive.writestr(i, buf)
+                continue
+
             if "/" in i.filename:
                 fname = i.filename.split("/", 1)[0]
             else:
                 fname = i.filename
+
             if not fname in remove_stdlib_for_smallify:
                 buf = stdlib_archive.read(i.filename)
                 stdlib_new_archive.writestr(i, buf)
