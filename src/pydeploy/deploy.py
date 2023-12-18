@@ -140,7 +140,10 @@ def main():
     gui_scripts = toml_project.get("gui-scripts", {})
 
     pydeploy_data = app_toml.get("tool", {}).get("pydeploy")
-    data_dirs = pydeploy_data.get("data_dirs", []) if pydeploy_data else None
+    if pydeploy_data:
+        data_dirs = pydeploy_data.get("data_dirs", [])
+        omit_files = pydeploy_data.get("omit_files", [])
+
 
     logging.info("Pydeploy running")
 
@@ -262,6 +265,14 @@ def main():
             sm.make(f"{script_name} = {script_path}", {"gui": gui})
         gui = True
 
+    if omit_files:
+        logging.info("Removing specified files from distibution")
+        for omission in omit_files:
+            logging.info(f"Looking for {omission}")
+            for f in Path(RUNTIME_DIST_PATH).glob(omission):
+                logging.info(f)
+                f.unlink()
+    
     if SMALLIFY:
         logging.info("Smallifying distribution")
 
