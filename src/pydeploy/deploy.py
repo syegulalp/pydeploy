@@ -145,10 +145,9 @@ def main():
     cli_scripts = toml_project.get("scripts", {})
     gui_scripts = toml_project.get("gui-scripts", {})
 
-    pydeploy_data = app_toml.get("tool", {}).get("pydeploy")
-    if pydeploy_data:
-        data_dirs = pydeploy_data.get("data_dirs", [])
-        omit_files = pydeploy_data.get("omit_files", [])
+    pydeploy_data = app_toml.get("tool", {}).get("pydeploy") or {}
+    data_dirs = pydeploy_data.get("data_dirs", [])
+    omit_files = pydeploy_data.get("omit_files", [])
 
 
     logging.info("Pydeploy running")
