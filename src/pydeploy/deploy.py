@@ -43,7 +43,11 @@ remove_for_smallify = (
     "_socket.pyd",
     "_decimal.pyd",
     "_elementtree*.*",
-    "_zoneinfo*.*"
+    "_zoneinfo*.*",
+    "_msi.pyd",
+    "winsound.pyd",
+    "_overlapped.pyd",
+    "pyexpat.pyd"
 )
 
 remove_stdlib_for_smallify = {
@@ -62,6 +66,9 @@ remove_stdlib_for_smallify = {
     "http",
     "logging",
     "zoneinfo",
+    "wsgiref",
+    "sqlite3",
+    "dbm"
     # files
     "pdb.pyc",
     "tarfile.pyc",
@@ -78,8 +85,7 @@ remove_stdlib_for_smallify = {
     "cgi.pyc",
     "calendar.pyc",
     "nttplib.pyc",
-    "plistlib.pyc",
-    
+    "plistlib.pyc",    
 }
 
 encodings_to_keep_for_smallify = {
@@ -252,6 +258,13 @@ def main():
     logging.info("Creating entry point .exes")
 
     gui = False
+
+    # here is where we would hook ScriptMaker to intercept
+    # the bootloader and add our icon
+    # wrap _get_launcher to redirect the bytes first to a 
+    # temp file, apply icon to that, then continue
+    # if no icon, just continue normally
+    
 
     for script in (cli_scripts, gui_scripts):
         for script_name, script_path in script.items():
