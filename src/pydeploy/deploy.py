@@ -89,7 +89,7 @@ remove_stdlib_for_smallify = {
 }
 
 encodings_to_keep_for_smallify = {
-    "aliases","cp437","cp1252","utf_8","utf_16_le","__init__"
+    "aliases","cp437","cp1252","utf_8","utf_16_le","latin_1", "__init__"
 }
 
 
@@ -232,7 +232,7 @@ def main():
                 if file.endswith(".py"):
                     f_path = Path(path, file)
                     compiled_f_path = f_path.with_suffix(".pyc")
-                    py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=-1)
+                    py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=1)
                     if ZIP_LIBS_ARCHIVE:
                         if all_py:
                             app_libs_archive.write(

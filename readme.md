@@ -12,7 +12,7 @@ PyDeploy has no dependencies other than the standard library.
 
 ## 1. Create a `pip install`-able project using `pyproject.toml` and the proper project layout
 
-Basically, make your app into a pip-installable package using `pyproject.toml`. If you haven't learned how to do this yet, I highly recommend it. The `examples` directory will furnish some examples for how to do this for various kinds of programs. [TODO]
+Basically, make your app into a pip-installable package using `pyproject.toml`. If you haven't learned how to do this yet, I highly recommend it. The `examples` directory will furnish some examples for how to do this for various kinds of programs.
 
 Make a virtual environment for your project, and ideally use a `src` directory for your application code. You should also have a `pyproject.toml` file along these lines:
 
