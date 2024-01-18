@@ -338,7 +338,7 @@ def main():
     app_archive = zipfile.ZipFile(
         str(zip_archive_filename),
         "w",
-        compression=zipfile.ZIP_BZIP2,
+        compression=zipfile.ZIP_DEFLATED,
     )
     for path, dirs, files in os.walk(str(RUNTIME_DIST_PATH)):
         target_path = path.replace(str(RUNTIME_DIST_PATH), ".")
