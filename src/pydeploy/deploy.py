@@ -173,8 +173,6 @@ def main():
 
     logging.info("Copying base files from redistributable")
 
-    # PACKAGE_NAME = sys.argv[1] if len(sys.argv) > 1 else "."
-
     PYLIBS_TARGET_DIR.mkdir()
 
     for dist_dir in ("python*.exe", "python*.dll"):
@@ -197,7 +195,9 @@ def main():
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    pip_result = subprocess.check_output(
+    logging.info(f"Running: pip install {PACKAGE_NAME} -t {APP_LIBS_TARGET_DIR}")
+
+    with subprocess.Popen(
         [
             sys.executable,
             "-m",
@@ -206,8 +206,12 @@ def main():
             PACKAGE_NAME,
             "-t",
             str(APP_LIBS_TARGET_DIR),
-        ]
-    )
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) as process:
+        for line in process.stdout:
+            print(line.decode("utf8"))
 
     logging.info("Removing legacy bin directory from distribution")
 
