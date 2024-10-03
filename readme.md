@@ -84,7 +84,7 @@ To use `data_dirs`, provide a list of two-item lists. The first item is the sour
 
 ## `omit_files`
 
-`omit_files` is a list of `glob` patterns, starting from the root of the distribution directory. Files that match these patters are removed from the distribution right before the .zip-archiving process. You can use this to remove things like build artfacts or other unwanted files from your shipped package.
+`omit_files` is a list of `glob` patterns, starting from the root of the distribution directory. Files that match these patterns are removed from the distribution right before the .zip-archiving process. You can use this to remove things like build artfacts or other unwanted files from your shipped package.
 
 # Tips
 
