@@ -138,6 +138,7 @@ def setup_directories():
 def main():
     SMALLIFY = False
     ZIP_LIBS_ARCHIVE = True
+    QUIET = False
 
     PACKAGE_NAME = "."
 
@@ -150,6 +151,8 @@ def main():
             SMALLIFY = True
         elif i == "-x":
             ZIP_LIBS_ARCHIVE = False
+        elif i == "-q":
+            QUIET = True
         else:
             raise ValueError(f"{i}: not a valid switch")
 
@@ -210,8 +213,10 @@ def main():
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     ) as process:
+
         for line in process.stdout:
-            print(line.decode("utf8"))
+            if not QUIET:
+                print(line.decode("utf8"))
 
     logging.info("Removing legacy bin directory from distribution")
 
