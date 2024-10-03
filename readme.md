@@ -22,7 +22,7 @@ name = "myapp"
 version = "0.1"
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
