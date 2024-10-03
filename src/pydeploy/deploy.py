@@ -6,6 +6,7 @@ import shutil
 import sys
 import tomllib
 import zipfile
+import subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -183,16 +184,7 @@ def main():
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    pip.main(
-        [
-            "install",
-            PACKAGE_NAME,
-            # "--no-cache-dir",
-            # "--force-reinstall",
-            "-t",
-            str(APP_LIBS_TARGET_DIR),
-        ]
-    )
+    pip_result = subprocess.check_output([sys.executable, '-m', 'pip', 'install', PACKAGE_NAME, "-t", str(APP_LIBS_TARGET_DIR),])
 
     logging.info("Removing legacy bin directory from distribution")
 
