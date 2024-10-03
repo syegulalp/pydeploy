@@ -7,10 +7,9 @@ import sys
 import tomllib
 import zipfile
 import subprocess
+
 from pathlib import Path
 from urllib.request import urlopen
-
-import pip
 from pip._vendor.distlib.scripts import ScriptMaker
 
 logging.basicConfig(level=logging.INFO)
