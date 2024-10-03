@@ -48,7 +48,7 @@ remove_for_smallify = (
     "_msi.pyd",
     "winsound.pyd",
     "_overlapped.pyd",
-    "pyexpat.pyd"
+    "pyexpat.pyd",
 )
 
 remove_stdlib_for_smallify = {
@@ -86,11 +86,17 @@ remove_stdlib_for_smallify = {
     "cgi.pyc",
     "calendar.pyc",
     "nttplib.pyc",
-    "plistlib.pyc",    
+    "plistlib.pyc",
 }
 
 encodings_to_keep_for_smallify = {
-    "aliases","cp437","cp1252","utf_8","utf_16_le","latin_1", "__init__"
+    "aliases",
+    "cp437",
+    "cp1252",
+    "utf_8",
+    "utf_16_le",
+    "latin_1",
+    "__init__",
 }
 
 
@@ -133,11 +139,19 @@ def main():
     SMALLIFY = False
     ZIP_LIBS_ARCHIVE = True
 
-    for i in sys.argv:
+    PACKAGE_NAME = "."
+
+    for i in sys.argv[1:]:
+        if not i.startswith("-"):
+            PACKAGE_NAME = i
+            continue
+
         if i == "-s":
             SMALLIFY = True
         elif i == "-x":
             ZIP_LIBS_ARCHIVE = False
+        else:
+            raise ValueError(f"{i}: not a valid switch")
 
     app_toml = tomllib.load(open("pyproject.toml", "rb"))
     toml_project = app_toml["project"]
@@ -150,7 +164,6 @@ def main():
     data_dirs = pydeploy_data.get("data_dirs", [])
     omit_files = pydeploy_data.get("omit_files", [])
 
-
     logging.info("Pydeploy running")
 
     if SMALLIFY:
@@ -160,7 +173,7 @@ def main():
 
     logging.info("Copying base files from redistributable")
 
-    PACKAGE_NAME = sys.argv[1] if len(sys.argv) > 1 else "."
+    # PACKAGE_NAME = sys.argv[1] if len(sys.argv) > 1 else "."
 
     PYLIBS_TARGET_DIR.mkdir()
 
@@ -184,7 +197,17 @@ def main():
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    pip_result = subprocess.check_output([sys.executable, '-m', 'pip', 'install', PACKAGE_NAME, "-t", str(APP_LIBS_TARGET_DIR),])
+    pip_result = subprocess.check_output(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            PACKAGE_NAME,
+            "-t",
+            str(APP_LIBS_TARGET_DIR),
+        ]
+    )
 
     logging.info("Removing legacy bin directory from distribution")
 
@@ -252,10 +275,9 @@ def main():
 
     # here is where we would hook ScriptMaker to intercept
     # the bootloader and add our icon
-    # wrap _get_launcher to redirect the bytes first to a 
+    # wrap _get_launcher to redirect the bytes first to a
     # temp file, apply icon to that, then continue
     # if no icon, just continue normally
-    
 
     for script in (cli_scripts, gui_scripts):
         for script_name, script_path in script.items():
@@ -276,7 +298,7 @@ def main():
             for f in Path(RUNTIME_DIST_PATH).glob(omission):
                 logging.info(f)
                 f.unlink()
-    
+
     if SMALLIFY:
         logging.info("Smallifying distribution")
 
@@ -296,7 +318,7 @@ def main():
 
         for i in stdlib_archive.infolist():
             if i.filename.startswith("encodings/"):
-                fname = i.filename.split("/", 1)[1].split(".",1)[0]
+                fname = i.filename.split("/", 1)[1].split(".", 1)[0]
                 if fname in encodings_to_keep_for_smallify:
                     buf = stdlib_archive.read(i.filename)
                     stdlib_new_archive.writestr(i, buf)
