@@ -135,6 +135,11 @@ def setup_directories():
 
 
 def main():
+    if len(sys.argv) < 2:
+        logging.info(
+            f"Assuming current working directory ({os.getcwd()}) for project source"
+        )
+
     SMALLIFY = False
     ZIP_LIBS_ARCHIVE = True
     QUIET = False
