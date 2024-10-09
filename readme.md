@@ -48,6 +48,8 @@ While in the project's root, type:
 
 `pydeploy`
 
+(You can also use `pd` for short.)
+
 If you want to supply an explicit path to a project:
 
 `pydeploy <project_dir>`

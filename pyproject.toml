@@ -11,3 +11,4 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 pydeploy = "pydeploy.deploy:main"
+pd = "pydeploy.deploy:main"
