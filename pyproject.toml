@@ -1,6 +1,21 @@
 [project]
 name = "pydeploy"
 version = "0.1"
+authors = [{ name = "Serdar Yegulalp", email = "serdar@infinimata.com" }]
+description = "allow pip installable Python programs to be deployed as standalone applications (currently only on Microsoft Windows)"
+readme = "readme.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Development Status :: 3 - Alpha",
+    "Topic :: Software Development :: Build Tools",
+]
+
+[project.urls]
+Homepage = "https://github.com/syegulalp/pydeploy"
+Issues = "https://github.com/syegulalp/pydeploy/issues"
 
 [project.optional-dependencies]
 dev = ["black"]
