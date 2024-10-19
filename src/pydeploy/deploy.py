@@ -134,6 +134,21 @@ def setup_directories():
     logging.info(f"Destination build path {RUNTIME_DIST_PATH}; creating")
 
 
+def show_help():
+    print(
+        """
+usage: pydeploy -[h|s|x|q] <package_name_or_path>
+          
+-h: print this help
+-s: "smallify" distribution (remove less-used packages)
+-x: don't zip libraries
+-q: quiet mode for pip install operations
+
+For current project directory, use . as package name
+"""
+    )
+
+
 def main():
     if len(sys.argv) < 2:
         logging.info(
@@ -151,6 +166,9 @@ def main():
             PACKAGE_NAME = i
             continue
 
+        if i == "-h":
+            show_help()
+            sys.exit()
         if i == "-s":
             SMALLIFY = True
         elif i == "-x":
@@ -158,7 +176,9 @@ def main():
         elif i == "-q":
             QUIET = True
         else:
-            raise ValueError(f"{i}: not a valid switch")
+            error_msg = f"{i}: not a valid switch"
+            show_help()
+            raise ValueError(error_msg)
 
     app_toml = tomllib.load(open("pyproject.toml", "rb"))
     toml_project = app_toml["project"]

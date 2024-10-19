@@ -62,8 +62,9 @@ The resulting archive may be fairly large even for a simple "hello world" app, b
 
 # Command line options
 
-Pydeploy has a few command line switches, supplied after the directory name for the project to build (the default is the current working directory):
+Pydeploy has a few command line switches, supplied along with the directory name for the project to build (the default is the current working directory):
 
+* `-h`: Print help.
 * `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if PyDeploy detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
 * `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
 * `-q`: Don't show output from `pip install`, just the basic log info.
