@@ -46,7 +46,7 @@ Right now PyDeploy is not on PyPI, so you'll need to install directly from Githu
 
 While in the project's root, type:
 
-`pydeploy`
+`pydeploy .`
 
 (You can also use `pd` for short.)
 
