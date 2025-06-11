@@ -144,16 +144,16 @@ usage: pydeploy -[h|s|x|q] <package_name_or_path>
 -x: don't zip libraries
 -q: quiet mode for pip install operations
 
-For current project directory, use . as package name
+For current project directory, use . as package name,
+e.g. pydeploy .
 """
     )
 
 
 def main():
     if len(sys.argv) < 2:
-        logging.info(
-            f"Assuming current working directory ({os.getcwd()}) for project source"
-        )
+        show_help()
+        sys.exit()
 
     SMALLIFY = False
     ZIP_LIBS_ARCHIVE = True
