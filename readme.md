@@ -123,7 +123,24 @@ To use `data_dirs`, provide a list of two-item lists. The first item is the sour
 
 # Tips
 
+## Examples
+
 The `examples` directory contains scaffolding examples for a few common project types -- a simple CLI, a windowed app using TKinter or Pygame, etc. This gallery will be expanded with time.
+
+## Use an `__init__.py` in your application package's source directory
+
+Some people encounter a problem where the editable install of their program works fine when they run it via the entry point, but the `pydeploy`-ed version crashes with an error like this:
+
+```
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "F:\Dev\myapp\deploy_3.13.5\dist\myapp.exe\__main__.py", line 4, in <module>
+    from myapp.main import main
+ModuleNotFoundError: No module named 'myapp'
+```
+
+To that end, if you don't have an `__init__.py` in  the package's source root (e.g., `/src/myapp`), you need to add one. An empty one should work fine.
 
 # Todo
 
