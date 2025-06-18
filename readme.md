@@ -69,6 +69,38 @@ Pydeploy has a few command line switches, supplied along with the directory name
 * `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
 * `-q`: Don't show output from `pip install`, just the basic log info.
 
+# Including program assets
+
+Many programs include data files that are not actually code -- for instance, a game with graphics and sound assets. Including these with your project is possible, but the best way to do this may requre you to slightly reorganize your project.
+
+When you build a `pydeploy` project, you can create subdirectories that are immediate children of the program's current working directory:
+
+```
+your_program
+    /libs # this contains the Python distribution
+    /data # your program's data directory
+    your_program.exe
+```
+
+This makes those directories easy to locate, as they are just children of the current working directory.
+
+In your source repository, the best place for the data directory is in a subdirectory that mirrors its location, like this:
+
+```
+your_program_repo
+    /src # your program data
+    /data
+    pyproject.toml
+```
+
+This keeps your data from being comingled with your program source.
+
+Since you need to create an entry point to start your program, you can then launch the entry point in the root directory of your program's repository (the current working directory), and have the data directory also detected as a child of that current working directory.
+
+To copy the data directory (or directories) to your deployement, you'll use `data_dirs` described in the next section.
+
+You can see an example layout of a project that follows this pattern in the directory `examples/pygame_asset`.
+
 # Using the `tool.pydeploy` section of `pyproject.toml` to configure build behavior
 
 You can configure some of Pydeploy's behaviors by adding a `tool.pydeploy` section to your `pyproject.toml` file.
