@@ -257,6 +257,17 @@ def main():
             if dir.endswith("__pycache__"):
                 shutil.rmtree(Path(path, dir), ignore_errors=True)
 
+    if omit_files:
+        logging.info("Removing specified files from distibution")
+        for omission in omit_files:
+            logging.info(f"Looking for {omission}")
+            for f in Path(RUNTIME_DIST_PATH).glob(omission):
+                logging.info(f)
+                if f.is_dir():
+                    shutil.rmtree(str(f))
+                else:
+                    f.unlink()                
+
     logging.info("Compiling .py to .pyc archives")
 
     if ZIP_LIBS_ARCHIVE:
@@ -325,13 +336,7 @@ def main():
             sm.make(f"{script_name} = {script_path}", {"gui": gui})
         gui = True
 
-    if omit_files:
-        logging.info("Removing specified files from distibution")
-        for omission in omit_files:
-            logging.info(f"Looking for {omission}")
-            for f in Path(RUNTIME_DIST_PATH).glob(omission):
-                logging.info(f)
-                f.unlink()
+
 
     if SMALLIFY:
         logging.info("Smallifying distribution")
