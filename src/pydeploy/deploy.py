@@ -52,6 +52,7 @@ remove_for_smallify = (
 
 remove_stdlib_for_smallify = {
     # folders
+    "_pyrepl",
     "html",
     "xml",
     "xmlrpc",
