@@ -1,5 +1,7 @@
 **/*.egg-info
 **/__pycache__
-build
-dist
+**/build
+**/dist
+**/deploy_*
+**/*.zip
 .venv

@@ -1,0 +1,11 @@
+[project]
+name = "numpy_example"
+version = "0.1"
+dependencies = ["numpy"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+np_example = "numpy_example:main"
