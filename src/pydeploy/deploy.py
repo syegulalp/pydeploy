@@ -14,11 +14,12 @@ from pip._vendor.distlib.scripts import ScriptMaker
 
 logging.basicConfig(level=logging.INFO)
 
-VERSION_ID = ".".join(str(_) for _ in sys.version_info[0:3])
-SHORT_VERSION_ID = "".join(str(_) for _ in sys.version_info[0:2])
+VERSION_ID = sys.version.split(" ",1)[0]
+SHORT_VERSION_ID = ".".join(str(_) for _ in sys.version_info[0:3])
+EMBED_VERSION_ID = "".join(str(_) for _ in sys.version_info[0:2])
 EMBEDDABLE_ARCHIVE_NAME = f"python-{VERSION_ID}-embed-amd64.zip"
 EMBEDDABLE_DOWNLOAD_LOCATION = (
-    f"https://www.python.org/ftp/python/{VERSION_ID}/{EMBEDDABLE_ARCHIVE_NAME}"
+    f"https://www.python.org/ftp/python/{SHORT_VERSION_ID}/{EMBEDDABLE_ARCHIVE_NAME}"
 )
 DISTRIBUTION_PATH = Path(f"./deploy_{VERSION_ID}")
 RUNTIME_SRC_PATH = Path(DISTRIBUTION_PATH, f"./build")
@@ -91,6 +92,7 @@ remove_stdlib_for_smallify = {
 
 encodings_to_keep_for_smallify = {
     "aliases",
+    "_win_cp_codecs",
     "cp437",
     "cp1252",
     "utf_8",
@@ -98,7 +100,6 @@ encodings_to_keep_for_smallify = {
     "latin_1",
     "__init__",
 }
-
 
 def fetch_runtime(source: str, target: Path):
     with urlopen(source) as u:
@@ -131,7 +132,7 @@ def setup_directories():
 
     # Remove existing distribution path
     shutil.rmtree(RUNTIME_DIST_PATH, ignore_errors=True)
-    RUNTIME_DIST_PATH.mkdir(parents=True)
+    RUNTIME_DIST_PATH.mkdir(parents=True, exist_ok=True)
     logging.info(f"Destination build path {RUNTIME_DIST_PATH}; creating")
 
 
@@ -209,11 +210,11 @@ def main():
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    with open(PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}._pth", "w") as dist_dir:
+    with open(PYLIBS_TARGET_DIR / f"python{EMBED_VERSION_ID}._pth", "w") as dist_dir:
         dist_dir.write(
             f"{APP_LIBS_TARGET_DIR_NAME}\n"
             f"{APP_LIBS_TARGET_DIR_NAME}/{app_name}_lib.zip\n"
-            f"python{SHORT_VERSION_ID}.zip\n"
+            f"python{EMBED_VERSION_ID}.zip\n"
             ".\n"
         )
 
@@ -341,7 +342,7 @@ def main():
     if SMALLIFY:
         logging.info("Smallifying distribution")
 
-        original_zip = PYLIBS_TARGET_DIR / f"python{SHORT_VERSION_ID}.zip"
+        original_zip = PYLIBS_TARGET_DIR / f"python{EMBED_VERSION_ID}.zip"
         new_zip = original_zip.with_suffix(".zip.new")
 
         for i in remove_for_smallify:
@@ -359,6 +360,7 @@ def main():
             if i.filename.startswith("encodings/"):
                 fname = i.filename.split("/", 1)[1].split(".", 1)[0]
                 if fname in encodings_to_keep_for_smallify:
+                    logging.info(f"Including encoding: {fname}.")
                     buf = stdlib_archive.read(i.filename)
                     stdlib_new_archive.writestr(i, buf)
                 continue
