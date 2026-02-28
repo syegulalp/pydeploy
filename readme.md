@@ -4,7 +4,7 @@ PyDeploy is an *experimental* project to allow Python programs to be deployed as
 
 Instead of using the PyInstaller approach, which is highly customized, PyDeploy uses Python-native tooling and procedures. It uses the Python redistributable package to create a self-contained Python instance, and `pip install`s the needed files into it.
 
-The end result should not cause antivirus systems to complain as it only uses the binaries already signed and redistributed with Python.
+The end result should not cause antivirus systems to complain as it only uses the binaries already signed and redistributed with Python. You can further ensure this is the case by deploying your program with a `.bat` launcher instead of an `.exe`.
 
 PyDeploy has no dependencies other than the standard library.
 
@@ -35,7 +35,6 @@ Note that the `project.scripts` section will be used by PyDeploy to determine wh
 
 If you want to copy *data directories or other artifacts* over to the target, see the section "Using the `tool.pydeploy` section of `pyproject.toml` to configure build behavior" below.
 
-
 ## 2. Install PyDeploy into project venv
 
 Right now PyDeploy is not on PyPI, so you'll need to install directly from Github:
@@ -65,6 +64,7 @@ The resulting archive may be fairly large even for a simple "hello world" app, b
 Pydeploy has a few command line switches, supplied along with the directory name for the project to build (the default is the current working directory):
 
 * `-h`: Print help.
+* `-b`: Create `.bat` launchers for the program rather than `.exe` files. This significantly reduces the chances of your package being flagged as malicious. Each entry point you define will have a separate `.bat` file associated with it. (NOTE: Read the "Tips" section "`.bat` entry points cannot use a function name" to understand how to use this correctly.)
 * `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if PyDeploy detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
 * `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
 * `-q`: Don't show output from `pip install`, just the basic log info.
@@ -126,6 +126,27 @@ To use `data_dirs`, provide a list of two-item lists. The first item is the sour
 ## Examples
 
 The `examples` directory contains scaffolding examples for a few common project types -- a simple CLI, a windowed app using TKinter or Pygame, etc. This gallery will be expanded with time.
+
+## `.bat` entry points cannot use a function name, only a module
+
+If you want to use a `.bat` launcher, and you have an entry point like this in your `pyproject.toml`, which specifies a function as well as a module:
+
+```toml
+[project.scripts]
+shmup_c = "shmup.main:main"
+```
+
+`.bat` file launchers use `python -m` to launch the program, which can only accept a *module* name, not a *module and a function* name. `shmup.main` would be okay; `shmup.main:main` would not be.
+
+To that end, ensure your entry point module runs your entry point function when executed directly:
+
+```py
+# in shmup.main:
+if __name__=="__main__":
+    main()
+```
+
+The name of the module will be used automatically to construct the `.bat` launcher; it will simply truncate the name at the `:`.
 
 ## Use an `__init__.py` in your application package's source directory
 

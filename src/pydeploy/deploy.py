@@ -145,6 +145,7 @@ usage: pydeploy -[h|s|x|q] <package_name_or_path>
 -s: "smallify" distribution (remove less-used packages)
 -x: don't zip libraries
 -q: quiet mode for pip install operations
+-b: generate .bat file launchers, not .exe
 
 For current project directory, use . as package name,
 e.g. pydeploy .
@@ -160,6 +161,7 @@ def main():
     SMALLIFY = False
     ZIP_LIBS_ARCHIVE = True
     QUIET = False
+    BATCH_LAUNCHER = False
 
     PACKAGE_NAME = "."
 
@@ -177,6 +179,8 @@ def main():
             ZIP_LIBS_ARCHIVE = False
         elif i == "-q":
             QUIET = True
+        elif i == "-b":
+            BATCH_LAUNCHER = True
         else:
             error_msg = f"{i}: not a valid switch"
             show_help()
@@ -240,7 +244,7 @@ def main():
         stderr=subprocess.STDOUT,
     ) as process:
 
-        for line in process.stdout:
+        for line in process.stdout:  # type: ignore
             if not QUIET:
                 print(line.decode("utf8"))
 
@@ -293,7 +297,7 @@ def main():
                 if file.endswith(".py"):
                     f_path = Path(path, file)
                     compiled_f_path = f_path.with_suffix(".pyc")
-                    py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=1)
+                    py_compile.compile(f_path, f_path.with_suffix(".pyc"), optimize=1)  # type: ignore
                     if ZIP_LIBS_ARCHIVE:
                         if all_py:
                             app_libs_archive.write(
@@ -325,19 +329,28 @@ def main():
     # temp file, apply icon to that, then continue
     # if no icon, just continue normally
 
-    for script in (cli_scripts, gui_scripts):
-        for script_name, script_path in script.items():
-            sm = ScriptMaker(
-                None,
-                target_dir=str(RUNTIME_DIST_PATH),
-                add_launchers=True,
-            )
-            sm.variants = [""]
-            sm.executable = f"./{PYLIBS_TARGET_DIR_NAME}/python.exe"
-            sm.make(f"{script_name} = {script_path}", {"gui": gui})
-        gui = True
+    if BATCH_LAUNCHER:
+        for script in (cli_scripts, gui_scripts):
+            for script_name, script_path in script.items():
+                truncated_path = script_path.split(":", 1)[0]
+                runtime = "pythonw" if gui else "python"
+                batch_contents = f'start "" ./{PYLIBS_TARGET_DIR_NAME}/{runtime}.exe -m {truncated_path}'
+                with open(RUNTIME_DIST_PATH / f"{script_name}.bat", "w") as f:
+                    f.write(batch_contents)
+            gui = True
 
-
+    else:
+        for script in (cli_scripts, gui_scripts):
+            for script_name, script_path in script.items():
+                sm = ScriptMaker(
+                    None,
+                    target_dir=str(RUNTIME_DIST_PATH),
+                    add_launchers=True,
+                )
+                sm.variants = [""]  # type: ignore
+                sm.executable = f"./{PYLIBS_TARGET_DIR_NAME}/python.exe"  # type: ignore
+                sm.make(f"{script_name} = {script_path}", {"gui": gui})
+            gui = True
 
     if SMALLIFY:
         logging.info("Smallifying distribution")
