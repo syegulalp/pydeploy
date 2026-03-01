@@ -141,7 +141,7 @@ def setup_directories():
 def show_help():
     print(
         """
-usage: pydeploy -[h|s|x|q] <package_name_or_path>
+usage: pydeploy -[h|s|x|q|b] <package_name_or_path>
           
 -h: print this help
 -s: "smallify" distribution (remove less-used packages)
@@ -335,9 +335,11 @@ def main():
     if BATCH_LAUNCHER:
         for script in (cli_scripts, gui_scripts):
             for script_name, script_path in script.items():
-                truncated_path = script_path.split(":", 1)[0]
+                truncated_script_path = script_path.split(":", 1)[0]
                 runtime = "pythonw" if gui else "python"
-                batch_contents = f'start "" ./{PYLIBS_TARGET_DIR_NAME}/{runtime}.exe -m {truncated_path}'
+                runtime_path = f"{PYLIBS_TARGET_DIR_NAME}/{runtime}.exe"
+                starter = f'start "" {runtime_path}' if gui else f'"{runtime_path}"'
+                batch_contents = f"{starter} -m {truncated_script_path}"
                 with open(RUNTIME_DIST_PATH / f"{script_name}.bat", "w") as f:
                     f.write(batch_contents)
             gui = True
