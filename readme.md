@@ -119,7 +119,11 @@ To use `data_dirs`, provide a list of two-item lists. The first item is the sour
 
 ## `omit_files`
 
-`omit_files` is a list of `glob` patterns, starting from the root of the distribution directory. Files that match these patterns are removed from the distribution right before the .zip-archiving process. You can use this to remove things like build artfacts or other unwanted files from your shipped package.
+`omit_files` is a list of `glob` patterns, starting from the root of the distribution directory. Files that match these patterns are removed from the distribution right before the .zip-archiving process. You can use this to remove things like build artfacts or other unwanted files from your shipped package. You can also use this to remove files from the runtime directory that aren't used in your program. E.g., if you don't use `sqlite3` in your distribution, you can use `*sqlite*` to omit its files.
+
+## `omit_from_stdlib`
+
+`omit_from_stdlib` is a list of `glob` patterns, starting from the root of the standard library `.zip` file. Files that match these patterns are removed from the standard library right before the .zip-archiving process. You can use this to remove standard library packages that aren't needed by your program, and do it more selectively than by using the `-s` switch.
 
 # Tips
 

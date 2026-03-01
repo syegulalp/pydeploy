@@ -11,6 +11,8 @@ import subprocess
 from pathlib import Path
 from urllib.request import urlopen
 from pip._vendor.distlib.scripts import ScriptMaker
+import fnmatch
+import re
 
 logging.basicConfig(level=logging.INFO)
 
@@ -196,6 +198,7 @@ def main():
     pydeploy_data = app_toml.get("tool", {}).get("pydeploy") or {}
     data_dirs = pydeploy_data.get("data_dirs", [])
     omit_files = pydeploy_data.get("omit_files", [])
+    omit_from_stdlib = pydeploy_data.get("omit_from_stdlib", [])
 
     logging.info("Pydeploy running")
 
@@ -351,6 +354,40 @@ def main():
                 sm.executable = f"./{PYLIBS_TARGET_DIR_NAME}/python.exe"  # type: ignore
                 sm.make(f"{script_name} = {script_path}", {"gui": gui})
             gui = True
+
+    if omit_from_stdlib:
+        logging.info("Omitting files from stdlib")
+
+        original_zip = PYLIBS_TARGET_DIR / f"python{EMBED_VERSION_ID}.zip"
+        new_zip = original_zip.with_suffix(".zip.new")
+
+        stdlib_archive = zipfile.ZipFile(str(original_zip), "r")
+        stdlib_new_archive = zipfile.ZipFile(
+            str(new_zip),
+            "w",
+            compression=zipfile.ZIP_DEFLATED,
+        )
+
+        omit_regexes = [re.compile(fnmatch.translate(j)) for j in omit_from_stdlib]
+        stdlib_to_omit = set(
+            _.filename
+            for _ in stdlib_archive.infolist()
+            if any(r.match(_.filename) for r in omit_regexes)
+        )
+
+        for _ in stdlib_to_omit:
+            logging.info(f"Omitting: {_}")
+
+        for i in stdlib_archive.infolist():
+            if i.filename not in stdlib_to_omit:
+                buf = stdlib_archive.read(i.filename)
+                stdlib_new_archive.writestr(i, buf)
+
+        stdlib_archive.close()
+        stdlib_new_archive.close()
+
+        original_zip.unlink()
+        new_zip.rename(original_zip)
 
     if SMALLIFY:
         logging.info("Smallifying distribution")
