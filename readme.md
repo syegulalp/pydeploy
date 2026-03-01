@@ -1,12 +1,12 @@
 > This project is still in its very early stages. This documentation is correspondingly rough and incomplete.
 
-PyDeploy is an *experimental* project to allow Python programs to be deployed as standalone applications (currently only on Microsoft Windows), provided they are written to be `pip install`-able by way of a `pyproject.toml` file.
+`pydeploy` is an *experimental* project to allow Python programs to be deployed as standalone applications (currently only on Microsoft Windows), provided they are written to be `pip install`-able by way of a `pyproject.toml` file.
 
-Instead of using the PyInstaller approach, which is highly customized, PyDeploy uses Python-native tooling and procedures. It uses the Python redistributable package to create a self-contained Python instance, and `pip install`s the needed files into it.
+Instead of using the PyInstaller approach, which is highly customized, `pydeploy` uses Python-native tooling and procedures. It uses the Python redistributable package to create a self-contained Python instance, and `pip install`s the needed files into it.
 
 The end result should not cause antivirus systems to complain as it only uses the binaries already signed and redistributed with Python. You can further ensure this is the case by deploying your program with a `.bat` launcher instead of an `.exe`.
 
-PyDeploy has no dependencies other than the standard library.
+`pydeploy` has no dependencies other than the standard library.
 
 # Usage
 
@@ -29,15 +29,15 @@ build-backend = "setuptools.build_meta"
 myproject = "myproject:main"
 ```
 
-Note that the `project.scripts` section will be used by PyDeploy to determine what `.exe` entry points to make. In this case, we will have a CLI entry point named `myproject.exe` in our deployable app directory.
+Note that the `project.scripts` section will be used by `pydeploy` to determine what `.exe` entry points to make. In this case, we will have a CLI entry point named `myproject.exe` in our deployable app directory.
 
-*Make sure your application works as a `pip install`-able project **before** you use PyDeploy!* Install your app into its own venv using the `-e` ("editable") flag, and test it that way.
+*Make sure your application works as a `pip install`-able project **before** you use `pydeploy`!* Install your app into its own venv using the `-e` ("editable") flag, and test it that way.
 
 If you want to copy *data directories or other artifacts* over to the target, see the section "Using the `tool.pydeploy` section of `pyproject.toml` to configure build behavior" below.
 
-## 2. Install PyDeploy into project venv
+## 2. Install `pydeploy` into project venv
 
-Right now PyDeploy is not on PyPI, so you'll need to install directly from Github:
+Right now `pydeploy` is not on PyPI, so you'll need to install directly from Github:
 
 `pip install git+https://github.com/syegulalp/pydeploy`
 
@@ -65,7 +65,7 @@ Pydeploy has a few command line switches, supplied along with the directory name
 
 * `-h`: Print help.
 * `-b`: Create `.bat` launchers for the program rather than `.exe` files. This significantly reduces the chances of your package being flagged as malicious. Each entry point you define will have a separate `.bat` file associated with it. (NOTE: Read the "Tips" section "`.bat` entry points cannot use a function name" to understand how to use this correctly.)
-* `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if PyDeploy detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
+* `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if `pydeploy` detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
 * `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
 * `-q`: Don't show output from `pip install`, just the basic log info.
 
