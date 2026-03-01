@@ -1,7 +1,7 @@
 [project]
 name = "pygame_example"
 version = "0.1"
-dependencies = ["pygame"]
+dependencies = ["pygame-ce"]
 
 [build-system]
 requires = ["setuptools"]
