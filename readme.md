@@ -170,7 +170,7 @@ To that end, if you don't have an `__init__.py` in  the package's source root (e
 # Todo
 
 * Support for including TKinter (not included with embedded redistributable)
-* Support for excluding specific modules or submodules from apps or stdlib, as opposed to just files
+* Refactoring to allow each step to be executed separately, and allow the project to be used as a library with hooks for each step
 
 # License
 
