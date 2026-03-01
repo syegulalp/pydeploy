@@ -116,6 +116,7 @@ def fetch_runtime(source: str, target: Path):
 
 
 def setup_directories():
+    # TODO: detect broken distribution
     if not DISTRIBUTION_PATH.exists():
         logging.info(f"Deployment path {DISTRIBUTION_PATH} doesn't exist, creating")
         DISTRIBUTION_PATH.mkdir()
@@ -455,9 +456,6 @@ def main():
     app_archive.close()
 
     logging.info(f"Finished creating distribution for {app_name}")
-
-    # options to include sqlite or tkinter
-
 
 if __name__ == "__main__":
     main()
