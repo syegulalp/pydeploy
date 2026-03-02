@@ -1,0 +1,1 @@
+This directory contains an example of a `pyproject.toml` project, used with `pydeploy`, that uses the Tkinter library. When deployed it can be invoked with the command `hello_world.exe`. Be sure to pass the `-t` option to `pydeploy`.

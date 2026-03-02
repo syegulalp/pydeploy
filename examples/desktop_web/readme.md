@@ -1,1 +1,1 @@
-This directory contains an example of a `pyproject.toml` project, useful with PyDeploy, that consists of an application that uses a local web interface. When deployed it can be invoked with the command `desktop_web.exe` or `desktop_web_c.exe` (for a version with a console).
+This directory contains an example of a `pyproject.toml` project, used with `pydeploy`, that consists of an application that uses a local web interface. When deployed it can be invoked with the command `desktop_web.exe` or `desktop_web_c.exe` (for a version with a console).

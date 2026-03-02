@@ -67,6 +67,7 @@ Pydeploy has a few command line switches, supplied along with the directory name
 
 * `-h`: Print help.
 * `-b`: Create `.bat` launchers for the program rather than `.exe` files. This significantly reduces the chances of your package being flagged as malicious. Each entry point you define will have a separate `.bat` file associated with it. (NOTE: Read the "Tips" section "`.bat` entry points cannot use a function name" to understand how to use this correctly.)
+* `-t`: Add support for Tkinter to your distribution. (NOTE: This is an *experimental* feature, and it requires Tkinter being present in the base Python installation that your project's venv has been built from. This should be the default for most conventionally installed Windows installations of Python.)
 * `-x`: Does not build zip archives of the application files. Normally all Python files are packed into a zip file, but the original layout of Python files can be preserved with this option. Note that if `pydeploy` detects a mix of Python and other files in an app directory, it will fall back to this behavior for that app directory.
 * `-s`: Omit some of the larger and less commonly used standard library modules, which reduces the footprint of the redistributable. The variables `remove_stdlib_for_smallify` and `remove_for_smallify` list the libraries and modules in question. (This will eventually be replaced with a more fine-grained mechanism.)
 * `-q`: Don't show output from `pip install`, just the basic log info.

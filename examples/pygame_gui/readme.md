@@ -1,1 +1,1 @@
-This directory contains an example of a `pyproject.toml` project, useful with PyDeploy, that consists of a PyGame example with a GUI interface. When deployed it can be invoked with the command `mygame.exe`.
+This directory contains an example of a `pyproject.toml` project, used with `pydeploy`, that consists of a PyGame example with a GUI interface. When deployed it can be invoked with the command `mygame.exe`.
