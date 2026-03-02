@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from pip._vendor.distlib.scripts import ScriptMaker
 import fnmatch
 import re
+import argparse
 
 logging.basicConfig(level=logging.INFO)
 
@@ -138,56 +139,36 @@ def setup_directories():
     RUNTIME_DIST_PATH.mkdir(parents=True, exist_ok=True)
     logging.info(f"Destination build path {RUNTIME_DIST_PATH}; creating")
 
-
-def show_help():
-    print(
-        """
-usage: pydeploy -[h|s|x|q|b] <package_name_or_path>
-          
--h: print this help
--s: "smallify" distribution (remove less-used packages)
--x: don't zip libraries
--q: quiet mode for pip install operations
--b: generate .bat file launchers, not .exe
-
-For current project directory, use . as package name,
-e.g. pydeploy .
-"""
-    )
-
+parser = argparse.ArgumentParser(
+    "pydeploy",
+    "allow Python programs to be deployed as standalone applications (currently only on Microsoft Windows)",
+)
+parser.add_argument("path", help="path to package to deploy (use . for cwd)")
+parser.add_argument(
+    "-s",
+    help='"smallify" distribution (remove less-used packages)',
+    action="store_true",
+)
+parser.add_argument("-x", help="don't zip libraries", action="store_false")
+parser.add_argument(
+    "-q", help="quiet mode for pip install operations", action="store_true"
+)
+parser.add_argument(
+    "-b", help="generate .bat file launchers, not .exe", action="store_true"
+)
 
 def main():
-    if len(sys.argv) < 2:
-        show_help()
-        sys.exit()
+    args = parser.parse_args()
 
-    SMALLIFY = False
-    ZIP_LIBS_ARCHIVE = True
-    QUIET = False
-    BATCH_LAUNCHER = False
+    if not args.path:
+        parser.print_help()
+        return
 
-    PACKAGE_NAME = "."
-
-    for i in sys.argv[1:]:
-        if not i.startswith("-"):
-            PACKAGE_NAME = i
-            continue
-
-        if i == "-h":
-            show_help()
-            sys.exit()
-        if i == "-s":
-            SMALLIFY = True
-        elif i == "-x":
-            ZIP_LIBS_ARCHIVE = False
-        elif i == "-q":
-            QUIET = True
-        elif i == "-b":
-            BATCH_LAUNCHER = True
-        else:
-            error_msg = f"{i}: not a valid switch"
-            show_help()
-            raise ValueError(error_msg)
+    SMALLIFY = args.s
+    ZIP_LIBS_ARCHIVE = args.x
+    QUIET = args.q
+    BATCH_LAUNCHER = args.b
+    PACKAGE_NAME = args.path
 
     app_toml = tomllib.load(open("pyproject.toml", "rb"))
     toml_project = app_toml["project"]
