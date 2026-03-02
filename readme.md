@@ -37,7 +37,9 @@ If you want to copy *data directories or other artifacts* over to the target, se
 
 ## 2. Install `pydeploy` into project venv
 
-Right now `pydeploy` is not on PyPI, so you'll need to install directly from Github:
+Use `pip install pydeploy-win` to install `pydeploy`.
+
+You can also install directly from Github:
 
 `pip install git+https://github.com/syegulalp/pydeploy`
 

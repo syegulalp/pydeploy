@@ -1,6 +1,6 @@
 [project]
-name = "pydeploy"
-version = "0.1"
+name = "pydeploy-win"
+version = "0.1.2"
 authors = [{ name = "Serdar Yegulalp", email = "serdar@infinimata.com" }]
 description = "allow pip installable Python programs to be deployed as standalone applications (currently only on Microsoft Windows)"
 readme = "readme.md"
@@ -17,11 +17,8 @@ classifiers = [
 Homepage = "https://github.com/syegulalp/pydeploy"
 Issues = "https://github.com/syegulalp/pydeploy/issues"
 
-[project.optional-dependencies]
-dev = ["black"]
-
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
