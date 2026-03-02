@@ -150,6 +150,11 @@ parser.add_argument(
 )
 parser.add_argument("-x", help="don't zip libraries", action="store_false")
 parser.add_argument(
+    "-t",
+    help="include Tk and Tkinter (not included by default) [EXPERIMENTAL]",
+    action="store_true",
+)
+parser.add_argument(
     "-q", help="quiet mode for pip install operations", action="store_true"
 )
 parser.add_argument(
@@ -165,6 +170,7 @@ def main():
 
     SMALLIFY = args.s
     ZIP_LIBS_ARCHIVE = args.x
+    TKINTER = args.t
     QUIET = args.q
     BATCH_LAUNCHER = args.b
     PACKAGE_NAME = args.path
@@ -192,22 +198,41 @@ def main():
 
     PYLIBS_TARGET_DIR.mkdir()
 
-    for dist_dir in ("python*.exe", "python*.dll"):
-        files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
+    for tk_dist_dir in ("python*.exe", "python*.dll"):
+        files = glob.glob(str(RUNTIME_UNPACK_PATH / tk_dist_dir))
         for ff in files:
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
 
-    with open(PYLIBS_TARGET_DIR / f"python{EMBED_VERSION_ID}._pth", "w") as dist_dir:
-        dist_dir.write(
+    if TKINTER:
+        logging.info("Adding Tcl and Tkinter to distribution")
+        for tk_dist_dir, target_dir in (
+            ("tcl", "tcl"),
+            (
+                "Lib/tkinter",
+                "tkinter",
+            ),
+        ):
+            shutil.copytree(
+                SYSTEM_INTERPRETER_PATH / tk_dist_dir, PYLIBS_TARGET_DIR / target_dir
+            )
+        dll_path = Path(PYLIBS_TARGET_DIR / "DLLs")
+        dll_path.mkdir()
+        for tk_file in ("_tkinter.pyd", "tcl86t.dll", "tk86t.dll", "zlib1.dll"):
+            shutil.copy(SYSTEM_INTERPRETER_PATH / "DLLs" / tk_file, dll_path)
+
+    with open(PYLIBS_TARGET_DIR / f"python{EMBED_VERSION_ID}._pth", "w") as tk_dist_dir:
+        if TKINTER:
+            tk_dist_dir.write("libs/DLLs\n./DLLs\n")
+        tk_dist_dir.write(
             f"{APP_LIBS_TARGET_DIR_NAME}\n"
             f"{APP_LIBS_TARGET_DIR_NAME}/{app_name}_lib.zip\n"
             f"python{EMBED_VERSION_ID}.zip\n"
             ".\n"
         )
 
-    for dist_dir in ("python*.zip", "*.pyd", "*.dll"):
-        files = glob.glob(str(RUNTIME_UNPACK_PATH / dist_dir))
+    for tk_dist_dir in ("python*.zip", "*.pyd", "*.dll"):
+        files = glob.glob(str(RUNTIME_UNPACK_PATH / tk_dist_dir))
         for ff in files:
             file = Path(ff)
             shutil.copyfile(file, PYLIBS_TARGET_DIR / file.name)
@@ -238,8 +263,8 @@ def main():
 
     logging.info("Removing dist-info directories")
 
-    for dist_dir in glob.glob(str(APP_LIBS_TARGET_DIR / "*.dist-info")):
-        shutil.rmtree(dist_dir, ignore_errors=True)
+    for tk_dist_dir in glob.glob(str(APP_LIBS_TARGET_DIR / "*.dist-info")):
+        shutil.rmtree(tk_dist_dir, ignore_errors=True)
 
     for path, dirs, files in os.walk(str(APP_LIBS_TARGET_DIR)):
         for dir in dirs:
@@ -250,12 +275,12 @@ def main():
         logging.info("Removing specified files from distibution")
         for omission in omit_files:
             logging.info(f"Looking for {omission}")
-            for f in Path(RUNTIME_DIST_PATH).glob(omission):
-                logging.info(f)
-                if f.is_dir():
-                    shutil.rmtree(str(f))
+            for tk_file in Path(RUNTIME_DIST_PATH).glob(omission):
+                logging.info(tk_file)
+                if tk_file.is_dir():
+                    shutil.rmtree(str(tk_file))
                 else:
-                    f.unlink()                
+                    tk_file.unlink()
 
     logging.info("Compiling .py to .pyc archives")
 
@@ -321,8 +346,8 @@ def main():
                 runtime_path = f"{PYLIBS_TARGET_DIR_NAME}/{runtime}.exe"
                 starter = f'start "" {runtime_path}' if gui else f'"{runtime_path}"'
                 batch_contents = f"{starter} -m {truncated_script_path}"
-                with open(RUNTIME_DIST_PATH / f"{script_name}.bat", "w") as f:
-                    f.write(batch_contents)
+                with open(RUNTIME_DIST_PATH / f"{script_name}.bat", "w") as tk_file:
+                    tk_file.write(batch_contents)
             gui = True
 
     else:
