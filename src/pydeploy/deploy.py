@@ -40,10 +40,9 @@ APP_LIBS_TARGET_DIR = PYLIBS_TARGET_DIR / APP_LIBS_TARGET_DIR_NAME
 
 remove_for_smallify = (
     "libssl*.*",
-    "sqlite*.*",
+    "*sqlite*",
     "libcrypto*.*",
     "_ssl.pyd",
-    "_sqlite3.pyd",
     "_socket.pyd",
     "_decimal.pyd",
     "_elementtree*.*",
