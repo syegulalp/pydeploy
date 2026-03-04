@@ -1,3 +1,10 @@
+from pathlib import Path
+from urllib.request import urlopen
+from pip._vendor.distlib.scripts import ScriptMaker
+
+import fnmatch
+import re
+import argparse
 import glob
 import logging
 import os
@@ -7,13 +14,6 @@ import sys
 import tomllib
 import zipfile
 import subprocess
-
-from pathlib import Path
-from urllib.request import urlopen
-from pip._vendor.distlib.scripts import ScriptMaker
-import fnmatch
-import re
-import argparse
 
 logging.basicConfig(level=logging.INFO)
 
