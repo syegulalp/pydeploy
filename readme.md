@@ -1,4 +1,4 @@
-> This project is still in its very early stages. This documentation is correspondingly rough and incomplete.
+> This project is still in its very early stages. The documentation covers all the current features, but the feature set is actively evolving.
 
 `pydeploy` is an *experimental* project to allow Python programs to be deployed as standalone applications (currently only on Microsoft Windows), provided they are written to be `pip install`-able by way of a `pyproject.toml` file.
 
